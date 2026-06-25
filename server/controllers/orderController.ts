@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma.js";
+import { inngest } from "../inngest/index.js";
 
 export const createOrder = async(req:Request, res: Response)=>{
     const {items, shippingAddress, paymentMethod} = req.body;
@@ -60,6 +61,10 @@ export const createOrder = async(req:Request, res: Response)=>{
             data:{stock:{decrement: item.quantity}}
         })
     }
+    for(const item of orderItems){
+        await inngest.send({name: "inventory/stock.updated", data:{productId: item.product}})
+    }
+    await inngest.send({name:"order/placed", data:{orderId: order.id}})
 }
 
 export const getUserOrders = async(req: Request, res: Response)=>{
