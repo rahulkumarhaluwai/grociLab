@@ -58,6 +58,7 @@ export const updateProduct = async(req: Request, res: Response)=>{
 }
 
 export const deleteProduct = async(req: Request, res: Response)=>{
-  const product = await prisma.product.delete({where:{id: req.params.id as string}})
-  res.json({message: "Deleted"})
+  await prisma.product.update({where:{id: req.params.id as string},
+  data:{stock: Number(0)}})
+   res.json({message:"Product Updated"})
 }
