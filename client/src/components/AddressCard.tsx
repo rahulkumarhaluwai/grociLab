@@ -25,7 +25,7 @@ const AddressCard = ({addr, onEditHandler, setAddresses}:AddressCardProps) => {
       }
     }
   return (
-    <div key={addr._id} className="max-w-3xl bg-white rounded-2xl p-6 flex items-start justify-between">
+    <div key={addr.id} className="max-w-3xl bg-white rounded-2xl p-6 flex items-start justify-between">
       <div className="flex gap-4">
         <div className="size-10 rounded-xl bg-app-cream flex-center shrink-0">
             <MapPinIcon className="size-5 text-app-green"/>
@@ -49,7 +49,7 @@ const AddressCard = ({addr, onEditHandler, setAddresses}:AddressCardProps) => {
         <button onClick={()=> onEditHandler(addr)} className="p-2 text-app-text-light hover:text-app-green hover:bg-app-cream rounded-lg transition-colors">
             <PencilIcon className="size-4"/>
         </button>
-        <button onClick={()=> handleDelete(addr._id)} className="p-2 text-app-text-light hover:text-app-error hover:bg-red-50 rounded-lg transition-colors">
+        <button onClick={()=> handleDelete(addr.id)} className="p-2 text-app-text-light hover:text-app-error hover:bg-red-50 rounded-lg transition-colors">
             <Trash2Icon className="size-4"/>
         </button>
       </div>

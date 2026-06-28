@@ -30,6 +30,7 @@ const Products = () => {
       if(category) params.set('category', category)
       if(organic) params.set('organic', organic)
       if(sort) params.set('sort', sort)
+      if (minPrice) params.set("minPrice", minPrice);
       if(maxPrice) params.set('maxPrice', maxPrice)
         params.set("page", String(page))
         params.set("limit", "12")
@@ -77,7 +78,15 @@ const Products = () => {
         <div className='flex gap-8 xl:gap-10'>
           <aside className='hidden lg:block w-64 shrink-0'>
             <div className='bg-white rounded-2xl p-4 sticky top-24'>
-              <FilterPanel categories={categoriesData} category={category} organic={organic} clearFilters={clearFilters} hasFilters={hasFilters}/>
+              <FilterPanel
+  categories={categoriesData}
+  category={category}
+  minPrice={minPrice}
+  maxPrice={maxPrice}
+  updateFilter={updateFilter}
+  clearFilters={clearFilters}
+  hasFilters={Boolean(hasFilters)}
+/>
             </div>
           </aside>
           <main className='flex-1'>
@@ -108,12 +117,12 @@ const Products = () => {
               <div className='text-center py-16'>
                  <p className='text-lg font-semibold text-app-green mb-2'>No Products found</p>
                  <p className='text-sm text-app-text-light mb-4'>Try adjusting your filters or search terms</p>
-                 <button onClick={clearFilters} className='px-5 py-2 text-sm font-medium bg-app-green text-while rounded-xl hover:bg-app-green-light transition-colors'>Clear Filters</button>
+                 <button onClick={clearFilters} className='px-5 py-2 text-sm font-medium bg-app-green text-white rounded-xl hover:bg-app-green-light transition-colors'>Clear Filters</button>
               </div>
             ) : (
               <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 xl:gap-8'>
                 {products.map((product)=> product.stock > 0 &&(
-                  <ProductCard key={product._id} product={product}/>
+                  <ProductCard key={product.id} product={product}/>
                 ))}
               </div>
             )}
@@ -140,7 +149,15 @@ const Products = () => {
             </button>
           </div>
           <div className='p-4'>
-            <FilterPanel categories={categoriesData} category={category} organic={organic} clearFilters={clearFilters} hasFilters={hasFilters}/>
+            <FilterPanel
+  categories={categoriesData}
+  category={category}
+  minPrice={minPrice}
+  maxPrice={maxPrice}
+  updateFilter={updateFilter}
+  clearFilters={clearFilters}
+  hasFilters={Boolean(hasFilters)}
+/>
           </div>
         </div>
         </>

@@ -30,7 +30,7 @@ const PopularProducts = () => {
           </div>
           <div className="grid grid-cols-3 lg:grid-cols-5 gap-4 xl:gap-8">
             {products.slice(0,10).map((product)=>(
-                <ProductCard key={product._id} product={product}/>
+                <ProductCard key={product.id} product={product}/>
             ))}
           </div>
         </div>

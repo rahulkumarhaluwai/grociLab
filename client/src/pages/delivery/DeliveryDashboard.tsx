@@ -57,7 +57,7 @@ export default function DeliveryDashboard() {
       const sendLocation = (pos: GeolocationPosition)=>{
         const {latitude:lat, longitude: lng} = pos.coords;
         activeOrders.forEach((order)=>{
-            axios.put(`${API_URL}/delivery/my-deliveries/${order._id}/location`,{lat, lng}, getAuthHeaders()).catch(()=>{})
+            axios.put(`${API_URL}/delivery/my-deliveries/${order.id}/location`,{lat, lng}, getAuthHeaders()).catch(()=>{})
         });
       }
       watchIdRef.current = navigator.geolocation.watchPosition(sendLocation,()=>{}, {
@@ -144,7 +144,7 @@ export default function DeliveryDashboard() {
                 </div>
             ) : (
                 <div className="space-y-4">
-                    {orders.map((order) => <DeliveryOrderCard key={order._id} order={order} tab={tab} handleUpdateStatus={handleUpdateStatus} setOtpModal={setOtpModal} setCancelModal={setCancelModal} />)}
+                    {orders.map((order) => <DeliveryOrderCard key={order.id} order={order} tab={tab} handleUpdateStatus={handleUpdateStatus} setOtpModal={setOtpModal} setCancelModal={setCancelModal} />)}
                 </div>
             )}
 

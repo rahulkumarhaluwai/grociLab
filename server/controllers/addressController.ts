@@ -9,7 +9,7 @@ export const getAddresses = async(req: Request, res: Response)=>{
    res.json({addresses})
 }
 
-export const addAddress = async(req: Request, res: Response)=>{
+export const addAddresses = async(req: Request, res: Response)=>{
    const {label, address, city, state, zip, isDefault, lat, lng} = req.body;
    if(lat == null || lng == null){
     return res.status(400).json({message:"Location coordinates are required. Please allow location access."});

@@ -20,7 +20,7 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false)
 
   const [address, setAddress] = useState<Address>({
-    _id:"",
+    id:"",
     label:"Home",
     address:"",
     city:"",
@@ -46,7 +46,7 @@ const Checkout = () => {
     try {
       const orderData = {
         items: items.map((items)=>({
-         product: items.product._id,
+         product: items.product.id,
          quantity: items.quantity,
         })),
         shippingAddress: address,
@@ -73,7 +73,7 @@ const Checkout = () => {
     if(user?.addresses?.length){
       const defaultAddr = user.addresses.find((a)=>a.isDefault) || user.addresses[0]
       setAddress({
-        _id:defaultAddr?._id,
+        id:defaultAddr?.id,
     label:defaultAddr?.label,
     address:defaultAddr?.address,
     city:defaultAddr?.city,
