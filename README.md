@@ -1,1 +1,1 @@
-currently working on a grocery delivery app Using PERN Stack and will update as i progress
+grociLab is a full-stack grocery delivery application built with PERN stack and other modern technologies like Prisma, Inngest and Stripe
