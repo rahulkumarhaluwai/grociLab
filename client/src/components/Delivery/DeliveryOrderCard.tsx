@@ -73,7 +73,6 @@ export default function DeliveryOrderCard({ order, tab, handleUpdateStatus, setO
                     )}
                 </div>
             )}
-
             {tab === "completed" && (
                 <div className="px-5 py-3 border-t border-app-border">
                     <p className="text-xs text-zinc-500 flex items-center gap-1">

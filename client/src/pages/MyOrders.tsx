@@ -14,7 +14,7 @@ const MyOrders = () => {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("all")
-  const [searchParams, setSearchParams] = useSearchParams("all")
+  const [searchParams, setSearchParams] = useSearchParams("")
   const tabs = ["all", "Placed", "Out for Delivery", "Delivered"]
   const {clearCart} = useCart()
   const fetchOrders = async()=>{

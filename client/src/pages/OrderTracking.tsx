@@ -24,7 +24,7 @@ const OrderTracking = () => {
       const fetchLocation = async()=>{
         try {
           const {data} = await api.get(`/orders/${id}/location`)
-          if(data.liveLocation?.lat && data.liveLocation.lng && data.Livelocation.updatedAt){
+          if(data.liveLocation?.lat && data.liveLocation.lng && data.liveLocation.updatedAt){
             setLiveLocation({
               lat: data.liveLocation.lat,
               lng: data.liveLocation.lng
@@ -65,7 +65,7 @@ const OrderTracking = () => {
              <LiveMap order={order} liveLocation={liveLocation}/>
              <OrderTimeLine order={order}/>
              {order?.deliveryPartner && order.status !== "Delivered" && order.status !== "Cancelled" &&(
-              <div className="bg-white rounded-2xl p-5 plex-items-center justify-between">
+              <div className="bg-white rounded-2xl p-5 flex-items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="size-11 rounded-full bg-app-green flex-center">
                     <span className="text-white font-semibold text-sm">
@@ -126,7 +126,7 @@ const OrderTracking = () => {
                 <span className="text-app-text-light">Tax</span>
                 <span>{currency}{order?.tax.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between pt--2 border-t border-app-border font-semibold text-app-green">
+              <div className="flex justify-between pt-2 border-t border-app-border font-semibold text-app-green">
                 <span>Total</span>
                 <span>{currency}{order?.total.toFixed(2)}</span>
               </div>
