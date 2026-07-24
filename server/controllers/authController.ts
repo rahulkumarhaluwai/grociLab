@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { prisma } from "../config/prisma.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import redis from "../config/redis.js";
 
 const generateToken=(id: string)=>{
   return jwt.sign({id}, process.env.JWT_SECRET as string,
@@ -40,19 +41,49 @@ export const register = async(req:Request, res: Response)=>{
 
 export const login = async(req:Request, res: Response)=>{
    const {email, password} = req.body;
+   if(!email || !password){
+   return res.status(400).json({
+      message:"Please provide email and password"
+   })
+}
+   const loginAttemptsKey = `login:attempts:${email.toLowerCase()}`;
 
+const loginAttempts = await redis.get(loginAttemptsKey);
+
+if (loginAttempts && Number(loginAttempts) >= 5) {
+   return res.status(429).json({
+      message: "Too many failed login attempts. Please try again later."
+   });
+}
    if(!email || !password){
     return res.status(400).json({message:"Please provide email and password"})
    }
 
    const user = await prisma.user.findUnique({where:{email:email.toLowerCase()}, include:{addresses: true}})
    if(!user){
-      return res.status(401).json({message:"Invalid email or password"})
+   const attempts = await redis.incr(loginAttemptsKey);
+
+   if(attempts === 1){
+      await redis.expire(loginAttemptsKey, 600);
    }
+
+   return res.status(401).json({
+      message:"Invalid email or password"
+   });
+}
    const isMatch = await bcrypt.compare(password, user.password)
    if(!isMatch){
-      return res.status(401).json({message:"Invalid email or password"});
+   const attempts = await redis.incr(loginAttemptsKey);
+
+   if(attempts === 1){
+      await redis.expire(loginAttemptsKey, 600);
    }
+
+   return res.status(401).json({
+      message:"Invalid email or password"
+   });
+}
+await redis.del(loginAttemptsKey);
    const token = generateToken(user.id)
    const userData: any = {...user};
    delete userData.password;

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { prisma } from "../config/prisma.js";
 import bcrypt from 'bcrypt'
 import jwt from "jsonwebtoken";
+import redis from "../config/redis.js";
 
 const generateToken=(id: string)=>{
    return jwt.sign({id, role:"delivery"}, process.env.JWT_SECRET as string, {expiresIn:"30d"})
@@ -9,6 +10,15 @@ const generateToken=(id: string)=>{
 
 export const loginPartner = async(req: Request, res:Response)=>{
    const {email, password} = req.body;
+   const loginAttemptsKey = `partner:login:attempts:${email.toLowerCase()}`;
+
+const loginAttempts = await redis.get(loginAttemptsKey);
+
+if (loginAttempts && Number(loginAttempts) >= 5) {
+  return res.status(429).json({
+    message: "Too many failed login attempts. Please try again later."
+  });
+}
    if(!email || !password){
     return res.status(400).json({message:"Please provide email and password"});
    }
@@ -16,15 +26,32 @@ export const loginPartner = async(req: Request, res:Response)=>{
     email: email.toLowerCase()
    }})
    if(!partner){
-     return res.status(401).json({message:"Invalid email or password"});
-   }
+  const attempts = await redis.incr(loginAttemptsKey);
+
+  if(attempts === 1){
+    await redis.expire(loginAttemptsKey, 600);
+  }
+
+  return res.status(401).json({
+    message:"Invalid email or password"
+  });
+}
    if(!partner.isActive){
      return res.status(401).json({message:"Your account has been deactivated"});
    }
    const isMatch = await bcrypt.compare(password, partner.password)
    if(!isMatch){
-    return res.status(401).json({message:"Invalid email or password"});
-   }
+  const attempts = await redis.incr(loginAttemptsKey);
+
+  if(attempts === 1){
+    await redis.expire(loginAttemptsKey, 600);
+  }
+
+  return res.status(401).json({
+    message:"Invalid email or password"
+  });
+}
+await redis.del(loginAttemptsKey);
    const token = generateToken(partner.id)
    const {password: _, ...partnerData} = partner;
 

@@ -1,5 +1,17 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma.js";
+import redis from "../config/redis.js";
+
+const clearProductCache = async () => {
+  const keys = await redis.keys("products:*");
+  const productKeys = await redis.keys("product:*");
+
+  const allKeys = [...keys, ...productKeys];
+
+  if (allKeys.length > 0) {
+    await redis.del(allKeys);
+  }
+};
 
 export const getFlashDeals = async(req: Request, res: Response)=>{
   const products = await prisma.product.findMany({
@@ -15,6 +27,20 @@ export const getFlashDeals = async(req: Request, res: Response)=>{
 
 export const getProducts = async(req: Request, res: Response)=>{
     const {category, search, minPrice,maxPrice, sort}= req.query;
+    const cacheKey = `products:${JSON.stringify({
+     category,
+     search,
+     minPrice,
+     maxPrice,
+     sort
+    })}`;
+    const cachedProducts = await redis.get(cacheKey);
+
+if (cachedProducts) {
+  return res.json({
+    products: JSON.parse(cachedProducts)
+  });
+}
     const where:any={};
     if(category && category !== "all") where.category = category as string;
     if(search) where.name = {contains: search as string, mode: "insensitive"};
@@ -51,32 +77,87 @@ const productsWithDiscount = products.map((p:any)=>{
     const discount = p.originalPrice && p.price ? Math.round(((p.originalPrice - p.price) / p.originalPrice)*100): 0;
      return {...p, discount}
 })
+await redis.set(
+  cacheKey,
+  JSON.stringify(productsWithDiscount),
+  {
+    EX: 300,
+  }
+);
 res.json({products: productsWithDiscount})
 }
 
+
 export const getProduct = async (req: Request, res: Response)=>{
-  const product = await prisma.product.findUnique({where:{id: req.params.id as string}})
+  const cacheKey = `product:${req.params.id}`;
+
+  const cachedProduct = await redis.get(cacheKey);
+
+  if (cachedProduct) {
+    return res.json({
+      product: JSON.parse(cachedProduct)
+    });
+  }
+
+  const product = await prisma.product.findUnique({
+    where:{id: req.params.id as string}
+  });
+
   if(!product){
-    res.status(404).json({message: "Product not found"})
+    res.status(404).json({message: "Product not found"});
     return;
   }
-  const discount = product.originalPrice && product.price ? Math.round(((product.originalPrice - product.price) / product.originalPrice)*100): 0;
 
-  res.json({product:{...product, discount}})
+  const discount = product.originalPrice && product.price
+    ? Math.round(((product.originalPrice - product.price) / product.originalPrice)*100)
+    : 0;
+
+  const productWithDiscount = {
+    ...product,
+    discount
+  };
+
+  await redis.set(
+    cacheKey,
+    JSON.stringify(productWithDiscount),
+    {
+      EX: 300
+    }
+  );
+
+  res.json({
+    product: productWithDiscount
+  });
 }
 
 export const createProduct = async(req: Request, res: Response)=>{
-  const product = await prisma.product.create({data: req.body})
-  res.status(201).json({product})
+  const product = await prisma.product.create({
+    data: req.body
+  });
+
+  await clearProductCache();
+
+  res.status(201).json({product});
 }
 
 export const updateProduct = async(req: Request, res: Response)=>{
-  const product = await prisma.product.update({where:{id: req.params.id as string},data:req.body})
-  res.json({product})
+  const product = await prisma.product.update({
+    where:{id: req.params.id as string},
+    data:req.body
+  });
+
+  await clearProductCache();
+
+  res.json({product});
 }
 
 export const deleteProduct = async(req: Request, res: Response)=>{
-  await prisma.product.update({where:{id: req.params.id as string},
-  data:{stock: Number(0)}})
-   res.json({message:"Product Updated"})
+  await prisma.product.update({
+    where:{id: req.params.id as string},
+    data:{stock: Number(0)}
+  });
+
+  await clearProductCache();
+
+  res.json({message:"Product Updated"});
 }

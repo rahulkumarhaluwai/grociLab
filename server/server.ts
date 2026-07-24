@@ -11,6 +11,7 @@ import addressRouter from "./routes/addressRoutes.js";
 import adminRouter from "./routes/adminRoutes.js";
 import deliveryPartnerRouter from "./routes/deliveryPartnerRoutes.js";
 import {stripeWebhook} from "./controllers/webhooks.js"
+import { connectRedis } from "./config/redis.js";
 
 const app = express();
 
@@ -39,6 +40,17 @@ app.use((error: any, req:Request, res:Response, next:NextFunction)=>{
   res.status(500).json({message: error.message})
 })
 
-app.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
-});
+async function startServer() {
+  try {
+    await connectRedis();
+
+    app.listen(port, () => {
+      console.log(`Server is running at http://localhost:${port}`);
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
+}
+
+startServer();
